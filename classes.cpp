@@ -1,38 +1,42 @@
+#include "classes.h"
+
 #include <iostream>
 #include <vector>
 
-#include "classes.h"
 
-using namespace std;
+runner::runner(std::string runnerName, time runner5kTime)
+    : name{ runnerName }
+    , time5k{ runner5kTime }
+{}
 
-string runner::get_name()
+
+std::string runner::GetName() const
 {
     return name;
 }
 
-int runner::get_mins()
+int runner::GetMins() const
 {
     return time5k.mins;
 }
 
-int runner::get_secs()
+int runner::GetSecs() const
 {
     return time5k.secs;
 }
 
-void runner::set_name(const string& input)
+void runner::SetName(const std::string& input)
 {
     name = input;
 }
 
-void runner::set_time(const int& m, const int& s)
+void runner::SetTime(const int m, const int s)
 {
     time5k.mins = m;
     time5k.secs = s;
 }
 
-void runner::display_runner()
+void runner::DisplayRunner() const
 {
-    cout << get_name();
-    cout << "\t" << time5k.mins << ":" << time5k.secs;
+    printf("%s\t%d:%d", name.c_str(), time5k.mins, time5k.secs);
 }

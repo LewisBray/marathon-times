@@ -1,64 +1,57 @@
+#include "functions.h"
+
 #include <iostream>
 #include <vector>
 
-#include "functions.h"
-
-using namespace std;
 
 int main()
 {
-    vector<runner*> runners;
+    std::vector<runner> runners;
+    if (!LoadRunners(runners))
+        return -1;
 
-    if(!load_from_file(runners)){return 1;}
+    SortAscending(runners);
 
-    sort_ascending(runners);
-
-
-    cout << "PB running times program." << endl << endl;
+    std::cout << "PB running times program.\n\n";
 
     bool quit = false;
-
-    while(!quit)
+    while (!quit)
     {
+        std::cout << "Menu:\n";
+        std::cout << "1) Add new runner.\n";
+        std::cout << "2) Remove runner.\n";
+        std::cout << "3) Update runner's personal best.\n";
+        std::cout << "4) Show leader-board.\n";
+        std::cout << "5) Save changes.\n";
+        std::cout << "6) Exit.\n\n";
+
         int choice;
-
-        cout << "Menu:" << endl;
-        cout << "1) Add new runner." << endl;
-        cout << "2) Remove runner." << endl;
-        cout << "3) Update runner's personal best." << endl;
-        cout << "4) Show leader-board." << endl;
-        cout << "5) Save changes." << endl;
-        cout << "6) Exit." << endl << endl;
-
-        while(1)
+        while (true)
         {
-            cin >> choice;
+            std::cin >> choice;
 
-            if(choice < 1 || choice > 6)
-            {
-                cout << "Not a valid choice." << endl;
-            }
-            else{break;}
+            if ((choice < 1) || (choice > 6))
+                std::cout << "Not a valid choice.\n";
+            else
+                break;
         }
 
-        switch(choice)
+        switch (choice)
         {
-            case 1: add_runners(runners);
+            case 1: AddRunners(runners);
                     break;
-            case 2: remove_runners(runners);
+            case 2: RemoveRunners(runners);
                     break;
-            case 3: edit_time(runners);
+            case 3: EditTime(runners);
                     break;
-            case 4: display_runners(runners);
+            case 4: DisplayRunners(runners);
                     break;
-            case 5: save_to_file(runners);
+            case 5: SaveRunners(runners);
                     break;
             case 6: quit = true;
                     break;
         }
     }
-
-    for(int i = 0; i < runners.size(); i++){delete runners[i];}
 
     return 0;
 }

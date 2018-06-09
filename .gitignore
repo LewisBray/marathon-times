@@ -1,0 +1,11 @@
+
+.vs/MarathonTimes/v15/.suo
+*.db
+*.ipch
+*.obj
+*.exe
+*.ilk
+*.log
+*.pdb
+*.tlog
+*.idb

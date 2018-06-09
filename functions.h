@@ -1,16 +1,23 @@
+
+#ifndef __FUNCTIONS_H__
+#define __FUNCTIONS_H__
+
 #include "classes.h"
 
-using namespace std;
+#include <vector>
 
-int find_smallest(const vector<runner*>& runners, const int& index);
-int find_runner_index(const vector<runner*>& runners, const string& key);
-bool do_again(const string& phrase);
-bool load_from_file(vector<runner*>& runners);
-void save_to_file(const vector<runner*>& runners);
-void sort_ascending(vector<runner*>& runners);
-void get_time_from_user(int& mins, int& secs);
-void swap_runners(vector<runner*>& runners, const int& index1, const int& index2);
-void add_runners(vector<runner*>& runners);
-void remove_runners(vector<runner*>& runners);
-void edit_time(vector<runner*>& runners);
-void display_runners(const vector<runner*>& runners);
+
+int FindSmallest(const std::vector<runner>& runners, const int index);
+int FindRunnerIndex(const std::vector<runner>& runners, const std::string& key);
+bool DoAgain(const std::string& phrase);
+bool LoadRunners(std::vector<runner>& runners);
+void SaveRunners(const std::vector<runner>& runners);
+void SortAscending(std::vector<runner>& runners);
+void GetTimeFromUser(int& mins, int& secs);
+void SwapRunners(std::vector<runner>& runners, const int index1, const int index2);
+void AddRunners(std::vector<runner>& runners);
+void RemoveRunners(std::vector<runner>& runners);
+void EditTime(std::vector<runner>& runners);
+void DisplayRunners(const std::vector<runner>& runners);
+
+#endif

@@ -1,25 +1,25 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-
 #include "functions.h"
 
-using namespace std;
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <vector>
 
-int find_smallest(const vector<runner*>& runners, const int& index)
-//Finds the index of the smallest entry in the vector, sorts by minutes then seconds then by name
+
+int FindSmallest(const std::vector<runner>& runners, const int index)
 {
     int smallest = index;
 
-    for(int i = index + 1; i < runners.size(); i++)
+    int numRunners = (int)runners.size();
+    for (int i = index + 1; i < numRunners; i++)
     {
-        if(runners[i]->get_mins() < runners[smallest]->get_mins()){smallest = i;}
-        else if(runners[i]->get_mins() == runners[smallest]->get_mins())//If runners have same minutes then check seconds
+        if(runners[i].GetMins() < runners[smallest].GetMins()){smallest = i;}
+        else if(runners[i].GetMins() == runners[smallest].GetMins())//If runners have same minutes then check seconds
         {
-            if(runners[i]->get_secs() < runners[smallest]->get_secs()){smallest = i;}
-            else if(runners[i]->get_secs() == runners[smallest]->get_secs())//If runners have same minutes and seconds
+            if(runners[i].GetSecs() < runners[smallest].GetSecs()){smallest = i;}
+            else if(runners[i].GetSecs() == runners[smallest].GetSecs())//If runners have same minutes and seconds
             {                                                               //then arrange alphabetically
-                if(runners[i]->get_name() < runners[smallest]->get_name()){smallest = i;}
+                if(runners[i].GetName() < runners[smallest].GetName()){smallest = i;}
             }
         }
     }
@@ -27,320 +27,275 @@ int find_smallest(const vector<runner*>& runners, const int& index)
     return smallest;
 }
 
-int find_runner_index(const vector<runner*>& runners, const string& key)
-//Returns the integer index for the runner with name = key, returns -1 if the runner is not an element of the list
+int FindRunnerIndex(const std::vector<runner>& runners, const std::string& key)
 {
     int last = runners.size();
 
     for(int i = 0; i < last; i++)
     {
-        if(runners[i]->get_name() == key){return i;}
+        if(runners[i].GetName() == key){return i;}
     }
 
     return -1;
 }
 
-bool do_again(const string& phrase)
-//Prompts the user if they would like to repeat the action chosen in the menu, returns true if they do
+bool DoAgain(const std::string& phrase)
 {
-    char choice;
-
-    while(1)
+    while (true)
     {
-        cout << phrase;//Phrase goes here to customise the interaction with the user and makes the code reusable
-        cout << "? -> (Y/N): ";
-        cin >> choice;
+        printf("%s? -> (Y/N): ", phrase.c_str());
+        char choice;
+        std::cin >> choice;
 
-        if(choice != 'Y' && choice != 'y' && choice != 'N' && choice != 'n')
-        {
-            cout << "Invalid input.  ";
-        }
-        else if(choice == 'N' || choice == 'n'){return false;}
-        else{return true;}
+        if ((choice == 'Y') || (choice == 'y'))
+            return true;
+        else if ((choice == 'N') || (choice == 'n'))
+            return false;
+        else
+            std::cout << "Invalid input.  ";
     }
 }
 
-bool load_from_file(vector<runner*>& runners)
-//Opens up runners.bin and extracts runner names and times, returns true unless any errors are encountered
+bool LoadRunners(std::vector<runner>& runners)
 {
-    ifstream ifile("runners.bin", ios::binary);
+    std::ifstream ifile("runners.bin", std::ios::binary);
 
-    if(!ifile.is_open())
-    {
-        cout << "Error opening file.  Exiting...";
+    if (!ifile.is_open()) {
+        std::cout << "Error opening file.  Exiting...";
         return false;
     }
 
-    ifile.seekg(0, ios::beg);//Start reading from beginning of file
+    ifile.seekg(0, std::ios::beg);
 
-    int no_of_runners;//Finds the number of entries first to see how many times it needs to loop and read entries
-
-    if(!ifile.read(reinterpret_cast<char*>(&no_of_runners), sizeof(no_of_runners)))
-    {
-        cout << "Error reading number of entries from file.  Exiting...";
+    int numRunners;
+    if (!ifile.read(reinterpret_cast<char*>(&numRunners), sizeof(numRunners))) {
+        std::cout << "Error reading number of entries from file.  Exiting...";
         return false;
     }
 
-    if(no_of_runners > 0)//If no_of_runners = 0 then no need to extract any info
+    for (int i = 0; i < numRunners; ++i)
     {
-        for(int i = 0; i < no_of_runners; i++)
-        {
-            int name_length, mins, secs;
-            string key;
-
-            if(!ifile.read(reinterpret_cast<char*>(&name_length), sizeof(name_length)))
-            {
-                cout << "Error reading entry " << i << "'s name length from file.  Exiting...";
-                return false;
-            }
-
-            if(name_length > 0 && name_length < 100)//Makes sure we aren't allocating too much memory, no name should be
-            {                                       //over 100 characters
-                char* p_str_buf = new char[name_length + 1];//+ 1 for null character which terminates string
-
-                if(!ifile.read(p_str_buf, name_length + 1))
-                {
-                    delete[] p_str_buf;
-                    cout << "Error reading entry " << i << "'s string from file.  Exiting...";
-                    return false;
-                }
-
-                if(p_str_buf[name_length] == 0)//Makes sure string is null-terminated
-                {
-                    key = string(p_str_buf);
-                }
-                else
-                {
-                    delete[] p_str_buf;
-                    cout << "Entry " << i << "'s name string is not null-terminated.  Exiting...";
-                    return false;
-                }
-
-                delete[] p_str_buf;
-            }
-            else
-            {
-                cout << "Entry " << i << "'s name length is outside of the range [0, 100].  Exiting...";
-                return false;
-            }
-
-            if(!ifile.read(reinterpret_cast<char*>(&mins), sizeof(mins)))
-            {
-                cout << "Error reading entry " << i << "'s minutes from file.  Exiting...";
-                return false;
-            }
-
-            if(!ifile.read(reinterpret_cast<char*>(&secs), sizeof(secs)))
-            {
-                cout << "Error reading entry " << i << "'s seconds from file.  Exiting...";
-                return false;
-            }
-
-            runners.push_back(new runner);//Allocate memory for runner data and set data fields in runner class
-            runners[i]->set_name(key);
-            runners[i]->set_time(mins, secs);
+        int nameLength;
+        if (!ifile.read(reinterpret_cast<char*>(&nameLength), sizeof(nameLength))) {
+            printf("Error reading entry %d's name length from file.  Exiting...", i);
+            return false;
         }
+
+        if ((nameLength <= 0) || (nameLength > 100)) {
+            printf("Entry %d 's name length is outside of the range [0, 100].  Exiting...", i);
+            return false;
+        }
+
+        std::unique_ptr<char[]> stringBuffer = std::make_unique<char[]>(nameLength + 1);
+
+        if (!ifile.read(stringBuffer.get(), nameLength + 1)) {
+            printf("Error reading entry %d's string from file.  Exiting...", i);
+            return false;
+        }
+
+        if (stringBuffer[nameLength] != '\0')
+            stringBuffer[nameLength] = '\0';
+
+        std::string name{stringBuffer.get()};
+        
+        int mins;
+        if (!ifile.read(reinterpret_cast<char*>(&mins), sizeof(mins))) {
+            printf("Error reading entry %d's minutes from file.  Exiting...", i);
+            return false;
+        }
+
+        int secs;
+        if (!ifile.read(reinterpret_cast<char*>(&secs), sizeof(secs))) {
+            printf("Error reading entry %d's seconds from file.  Exiting...", i);
+            return false;
+        }
+
+        runners.emplace_back(name, time{ mins, secs });
     }
 
     return true;
 }
 
-void save_to_file(const vector<runner*>& runners)
-//Opens runners.bin, deletes the data then writes the data stored in our vector to the file
+void SaveRunners(const std::vector<runner>& runners)
 {
-    ofstream ofile("runners.bin", ios::trunc | ios::binary);
+    std::ofstream ofile("runners.bin", std::ios::trunc | std::ios::binary);
 
-    if(!ofile.is_open())
-    {
-        cout << "Error opening file.";
+    if (!ofile.is_open()) {
+        std::cout << "Error opening file.";
         return;
     }
 
-    ofile.seekp(0, ios::beg);//Seek to beginning of file to write
+    ofile.seekp(0, std::ios::beg);
 
-    int no_of_runners = runners.size();//First datum saved is number of runners for reading purposes
+    int numRunners = runners.size();
+    ofile.write(reinterpret_cast<char*>(&numRunners), sizeof(numRunners));
 
-    ofile.write(reinterpret_cast<char*>(&no_of_runners), sizeof(no_of_runners));
-
-    for(int i = 0; i < no_of_runners; i++)
+    for (int i = 0; i < numRunners; ++i)
     {
-        int name_length = runners[i]->get_name().length(), mins = runners[i]->get_mins(), secs = runners[i]->get_secs();
+        int nameLength = runners[i].GetName().length();
+        int mins = runners[i].GetMins();
+        int secs = runners[i].GetSecs();
 
-        ofile.write(reinterpret_cast<char*>(&name_length), sizeof(name_length));
-        ofile.write(runners[i]->get_name().c_str(), name_length + 1);
+        ofile.write(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
+        ofile.write(runners[i].GetName().c_str(), nameLength + 1);
         ofile.write(reinterpret_cast<char*>(&mins), sizeof(mins));
         ofile.write(reinterpret_cast<char*>(&secs), sizeof(secs));
     }
 
-    cout << endl << "Changes saved." << endl << endl;
+    std::cout << "\nChanges saved.\n\n";
 }
 
-void sort_ascending(vector<runner*>& runners)
-//Goes through the vector from the start and swaps the current element with the smallest in the remainder of the vector
+void SortAscending(std::vector<runner>& runners)
 {
-    for(int i = 0; i < runners.size() - 1; i++)
+    const int numRunners = runners.size();
+    for (int i = 0; i < numRunners - 1; ++i)
+        SwapRunners(runners, i, FindSmallest(runners, i));
+}
+
+void GetTimeFromUser(int& mins, int& secs)
+{
+    while (true)
     {
-        swap_runners(runners, i, find_smallest(runners, i));
+        std::cout << "Enter minutes: ";
+        std::cin >> mins;
+
+        if ((mins < 0) || (mins >= 60))
+            std::cout << "That's not a valid number of minutes.  ";
+        else
+            break;
+    }
+
+    while (true)
+    {
+        std::cout << "Enter seconds: ";
+        std::cin >> secs;
+
+        if ((secs < 0) || (secs >= 60))
+            std::cout << "That's not a valid number of seconds.  ";
+        else
+            break;
     }
 }
 
-void get_time_from_user(int& mins, int& secs)
-//Makes sure the time input by the user is in the range [0, 59] since we are dealing with times
+void SwapRunners(std::vector<runner>& runners, const int index1, const int index2)
 {
-    while(1)
-    {
-        cout << "Enter minutes: ";
-        cin >> mins;
-
-        if(mins < 0 || mins >= 60){cout << "That's not a valid number of minutes.  ";}
-        else{break;}
-    }
-
-    while(1)
-    {
-        cout << "Enter seconds: ";
-        cin >> secs;
-
-        if(secs < 0 || secs >= 60){cout << "That's not a valid number of seconds.  ";}
-        else{break;}
-    }
-}
-
-void swap_runners(vector<runner*>& runners, const int& index1, const int& index2)
-{
-    runner* p_temp = runners[index1];
+    runner* temp = &runners[index1];
     runners[index1] = runners[index2];
-    runners[index2] = p_temp;
+    runners[index2] = *temp;
 }
 
-void add_runners(vector<runner*>& runners)
-//Takes in information for a new runner and allocates new memory for it, loops until user does not want to add more
+void AddRunners(std::vector<runner>& runners)
 {
-    bool add_more = true;
-
-    while(add_more)
+    while (true)
     {
-        string new_name;
-        int m, s;
+        std::string newName;
+        std::cout << "Enter name: ";
+        getline(std::cin, newName);
 
-        cin.get();//Having error whilst running, where after selecting an option at the main menu the following getline function
-                  //is being called prematurely, so added this in as a buffer, similar in other functions
-        cout << "Enter name: ";
-        getline(cin, new_name);
+        int mins, secs;
+        GetTimeFromUser(mins, secs);
 
-        get_time_from_user(m, s);
+        runners.emplace_back(newName, time{ mins, secs });
 
-        runners.push_back(new runner);
-        runners[runners.size() - 1]->set_name(new_name);
-        runners[runners.size() - 1]->set_time(m, s);
-
-        if(!do_again("Add another runner")){add_more = false;}
+        if (!DoAgain("Add another runner"))
+            break;
     }
 
-    if(runners.size() > 1){sort_ascending(runners);}//After being added the list is sorted to make sure it's in the correct place
+    if (runners.size() > 1)
+        SortAscending(runners);
 
-    cout << endl << endl;
+    std::cout << "\n\n";
 }
 
-void remove_runners(vector<runner*>& runners)
-//Takes in a runner's name and removes them from the list, loops until the user no longer wants to remove any or list size is 0
+void RemoveRunners(std::vector<runner>& runners)
 {
-    bool remove_more = true;
-
-    if(runners.size() == 0)//Insures function doesn't run if there are no entries to remove
-    {
-        cout << "There are no runners left to remove!!!";
-        remove_more = false;
+    if (runners.empty()) {
+        std::cout << "There are no runners left to remove!!!";
+        return;
     }
 
-    while(remove_more)
+    while (true)
     {
-        string name_to_remove;
         int index;
-
-        cin.get();
-
-        while(1)
+        while (true)
         {
-            cout << "Enter name of runner to remove: ";
-            getline(cin, name_to_remove);
+            std::string nameToRemove;
+            std::cout << "Enter name of runner to remove: ";
+            getline(std::cin, nameToRemove);
 
-            index = find_runner_index(runners, name_to_remove);
+            index = FindRunnerIndex(runners, nameToRemove);
 
-            if(index == -1){cout << "That runner doesn't exist!" << endl;}
-            else{break;}
+            if (index == -1)
+                std::wcout << "That runner doesn't exist!\n";
+            else
+                break;
         }
-
-        delete runners[index];//Frees up memory pointed to by the entry about to be removed
-
-        runners[index] = NULL;//Sets the pointer to NULL to avoid any errors in rest of run-time
 
         runners.erase(runners.begin() + index);
 
-        if(runners.size() == 0)//Doesn't give option to remove more if there aren't any to remove
-        {
-            cout << "There are no runners left to remove.";
+        if (runners.empty()) {
+            std::cout << "There are no runners left to remove.";
             break;
         }
 
-        if(!do_again("Remove another runner")){remove_more = false;}
+        if (!DoAgain("Remove another runner"))
+            break;
     }
 
-    cout << endl << endl;
+    std::cout << "\n\n";
 }
 
-void edit_time(vector<runner*>& runners)
-//Takes in a runner's name and allows the user to update the runner's time
+void EditTime(std::vector<runner>& runners)
 {
-    bool edit_more = true;
-
-    if(runners.size() == 0)//Makes sure there are entries to edit
-    {
-        cout << "There are no runners to edit!!!";
-        edit_more = false;
+    if (runners.empty()) {
+        std::cout << "There are no runners to edit!!!";
+        return;
     }
 
-    while(edit_more)
+    while (true)
     {
-        string name_to_edit;
-        int index, m, s;
+        std::string nameToEdit;
+        int index;
 
-        cin.get();
-
-        while(1)
+        while (true)
         {
-            cout << "Enter name of runner whose time you want to edit: ";
-            getline(cin, name_to_edit);
+            std::cout << "Enter name of runner whose time you want to edit: ";
+            getline(std::cin, nameToEdit);
 
-            index = find_runner_index(runners, name_to_edit);
+            index = FindRunnerIndex(runners, nameToEdit);
 
-            if(index == -1){cout << "That runner doesn't exist!" << endl;}
-            else{break;}
+            if (index == -1)
+                std::cout << "That runner doesn't exist!\n";
+            else
+                break;
         }
 
-        get_time_from_user(m, s);
+        int mins, secs;
+        GetTimeFromUser(mins, secs);
 
-        runners[index]->set_time(m, s);
+        runners[index].SetTime(mins, secs);
 
-        if(!do_again("Edit another runner's time")){edit_more = false;}
+        if (!DoAgain("Edit another runner's time"))
+            break;
     }
 
-    if(runners.size() > 1){sort_ascending(runners);}//Times have been updated so this can change the rankings
+    if (runners.size() > 1)
+        SortAscending(runners);
 
-    cout << endl << endl;
+    std::cout << "\n\n";
 }
 
-void display_runners(const vector<runner*>& runners)
+void DisplayRunners(const std::vector<runner>& runners)
 //Prints out the list of runners and their times in a pre-defined format
 {
-    cout << endl << "5k times:" << endl << endl;
+    std::cout << "\n5k times:\n\n";
 
-    for(int i = 0; i < runners.size(); i++)
+    for (int i = 0, numRunners = runners.size(); i < numRunners; i++)
     {
-        cout << "  " << i + 1 << ") ";
-        runners[i]->display_runner();
-        cout << endl;
+        printf("  %d) ", i + 1);
+        runners[i].DisplayRunner();
+        std::cout << "\n";
     }
 
-    cout << endl << endl;
+    std::cout << "\n\n";
 }
