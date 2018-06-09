@@ -1,16 +1,16 @@
-#include "functions.h"
+#include "database.h"
 
-#include <iostream>
-#include <vector>
 
+int MenuChoice();
 
 int main()
 {
-    std::vector<runner> runners;
-    if (!LoadRunners(runners))
-        return -1;
+    database timesDatabase;
 
-    SortAscending(runners);
+    if (!timesDatabase.LoadFromFile()) {
+        std::cerr << "Error reading runner data.  Exiting...";
+        return -1;
+    }
 
     std::cout << "PB running times program.\n\n";
 
@@ -20,38 +20,47 @@ int main()
         std::cout << "Menu:\n";
         std::cout << "1) Add new runner.\n";
         std::cout << "2) Remove runner.\n";
-        std::cout << "3) Update runner's personal best.\n";
+        std::cout << "3) Edit runner's personal best.\n";
         std::cout << "4) Show leader-board.\n";
         std::cout << "5) Save changes.\n";
         std::cout << "6) Exit.\n\n";
 
-        int choice;
-        while (true)
-        {
-            std::cin >> choice;
-
-            if ((choice < 1) || (choice > 6))
-                std::cout << "Not a valid choice.\n";
-            else
-                break;
-        }
-
+        int choice = MenuChoice();
         switch (choice)
         {
-            case 1: AddRunners(runners);
-                    break;
-            case 2: RemoveRunners(runners);
-                    break;
-            case 3: EditTime(runners);
-                    break;
-            case 4: DisplayRunners(runners);
-                    break;
-            case 5: SaveRunners(runners);
-                    break;
-            case 6: quit = true;
-                    break;
+        case 1: timesDatabase.AddRunners();
+                break;
+        case 2: timesDatabase.RemoveRunners();
+                break;
+        case 3: timesDatabase.EditRunnerTimes();
+                break;
+        case 4: timesDatabase.ShowLeaderboard();
+                break;
+        case 5: timesDatabase.SaveToFile();
+                break;
+        case 6: quit = true;
+                break;
         }
     }
 
     return 0;
+}
+
+
+int MenuChoice()
+{
+    int choice;
+    while (true)
+    {
+        std::string choiceAsString;
+        getline(std::cin, choiceAsString);
+        choice = stoi(choiceAsString);
+
+        if ((choice < 1) || (choice > 6))
+            std::cout << "Not a valid choice.\n";
+        else
+            break;
+    }
+
+    return choice;
 }
