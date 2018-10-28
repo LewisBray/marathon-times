@@ -1,35 +1,17 @@
 #ifndef __DISTANCETIME_H__
 #define __DISTANCETIME_H__
 
-#include <iostream>
+#include <ostream>
 
-
-// Handles times given in minutes and seconds.
-struct time
+struct Time
 {
-    bool operator<(const time& other) const
-    {
-        if (mins < other.mins)
-            return true;
-        else if (mins > other.mins)
-            return false;
-        else
-            return (secs < other.secs);
-    }
+    bool operator<(const Time& other) const;
+    bool operator>(const Time& other) const;
 
-    bool operator>(const time& other) const
-    {
-        if (mins > other.mins)
-            return true;
-        else if (mins < other.mins)
-            return false;
-        else
-            return (secs > other.secs);
-    }
-
-
-    int mins;
-    int secs;
+    int mins_;
+    int secs_;
 };
+
+std::ostream& operator<<(std::ostream& out, const Time& time);
 
 #endif

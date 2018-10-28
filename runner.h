@@ -3,36 +3,19 @@
 
 #include "distancetime.h"
 
+#include <ostream>
 #include <string>
 
-
-// Handles typical properties of a runner.
-struct runner
+struct Runner
 {
-    runner(std::string runnerName, time runner5kTime)
-        : name{ runnerName }
-        , time5k{ runner5kTime }
-    {}
+    Runner(const std::string& name, const Time& time5k);
 
-    // Defined so we can call std::sort on vector of runners
-    bool operator<(const runner& other) const
-    {
-        if (time5k < other.time5k)
-            return true;
-        else if (time5k > other.time5k)
-            return false;
-        else
-            return (name < other.name);
-    }
+    bool operator<(const Runner& other) const;
 
-    inline void Display() const
-    {
-        printf("%s\t%02d:%02d", name.c_str(), time5k.mins, time5k.secs);
-    }
-
-
-    std::string name;
-    time time5k;
+    std::string name_;
+    Time time5k_;
 };
+
+std::ostream& operator<<(std::ostream& out, const Runner& runner);
 
 #endif

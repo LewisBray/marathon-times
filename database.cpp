@@ -2,55 +2,49 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
+constexpr char const DataFile[] = "runners.bin";
 
-// Saves runner data from 'runners' to "runners.bin".
-/*
-This should be a const function but it just so happens to sort the order of
-'runners'.  You could argue that it's not really changing the class and I would
-agree, it just felt silly to make the only member variable mutable for the sake
-of making this function (and ShowLeaderboard) const as this makes const lose all
-meaning in this class if all member variables can be modified by const methods.
-
-File format of "runners.bin" described in associated readme.txt in repository.
-*/
-bool database::SaveToFile()
+// This should be a const function but it just so happens to sort the order of
+// 'runners_'.  You could argue that it's not really changing the class and I
+// would agree, it just felt silly to make the only member variable mutable for
+// the sake of making this function (and ShowLeaderboard) const as this makes
+// const lose all meaning in this class if all member variables can be modified
+// by const methods.  N.B.  File format of "runners.bin" described in associated
+// readme.txt in repository.
+bool Database::saveToFile()
 {
-    std::sort(runners.begin(), runners.end());
+    std::sort(runners_.begin(), runners_.end());
 
-    std::ofstream outFile("runners.bin", std::ios::trunc | std::ios::binary);
+    std::ofstream outFile(DataFile, std::ios::trunc | std::ios::binary);
     if (!outFile.is_open())
         return false;
 
     outFile.seekp(0, std::ios::beg);
 
-    const int numRunners = runners.size();
+    const int numRunners = runners_.size();
     outFile.write(reinterpret_cast<const char*>(&numRunners), sizeof(numRunners));
 
-    for (const runner& person : runners)
+    for (const Runner& runner : runners_)
     {
-        const int nameLength = person.name.length();
-        const time time5k = person.time5k;
+        const int nameLength = runner.name_.length();
+        const Time time5k = runner.time5k_;
 
         outFile.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
-        outFile.write(person.name.c_str(), nameLength + 1);
+        outFile.write(runner.name_.c_str(), nameLength + 1);
         outFile.write(reinterpret_cast<const char*>(&time5k), sizeof(time5k));
     }
 
-    std::cout << "\nChanges saved.\n\n";
+    std::cout << std::endl << "Changes saved." << std::endl << std::endl;
 
     return true;
 }
 
-
-// Loads all runner data from "runners.bin" and puts into member variable.
-/*
-File format of "runners.bin" described in associated readme.txt in repository.
-*/
-bool database::LoadFromFile()
+bool Database::loadFromFile()
 {
-    std::ifstream inFile("runners.bin", std::ios::binary);
+    std::ifstream inFile(DataFile, std::ios::binary);
     if (!inFile.is_open())
         return false;
 
@@ -68,52 +62,45 @@ bool database::LoadFromFile()
             || (nameLength <= 0) || (nameLength > 100))
             return false;
 
-        std::unique_ptr<char[]> stringBuffer = std::make_unique<char[]>(nameLength + 1);
-        if (!inFile.read(stringBuffer.get(), nameLength + 1)
-            || (stringBuffer[nameLength] != '\0'))
+        std::unique_ptr<char[]> nameBuffer = std::make_unique<char[]>(nameLength + 1);
+        if (!inFile.read(nameBuffer.get(), nameLength + 1)
+            || (nameBuffer[nameLength] != '\0'))
             return false;
 
-        std::string name{ stringBuffer.get() };
+        const std::string name{ nameBuffer.get() };
 
-        time runner5kTime;
+        Time runner5kTime;
         if (!inFile.read(reinterpret_cast<char*>(&runner5kTime), sizeof(runner5kTime)))
             return false;
 
-        runners.emplace_back(name, runner5kTime);
+        runners_.emplace_back(name, runner5kTime);
     }
 
     return true;
 }
 
-
-// Gets new runner details from user and adds to the member vector of runners.
-void database::AddRunners()
+void Database::addRunners()
 {
-    while (true)
+    do
     {
         std::cout << "Enter name: ";
 
         std::string newName;
         getline(std::cin, newName);
 
-        const time new5kTime = GetTimeFromUser();
+        const Time new5kTime = askUserForMarathonTime();
 
-        runners.emplace_back(newName, new5kTime);
+        runners_.emplace_back(newName, new5kTime);
+    } while (askUserToDoAgain("Add another runner"));
 
-        if (!DoAgain("Add another runner"))
-            break;
-    }
-
-    std::cout << "\n\n";
+    std::cout << std::endl << std::endl;
 }
 
-
-// Asks user for a name and if this is a runner it removes that entry from 'runners'.
-void database::RemoveRunners()
+void Database::removeRunners()
 {
-    while (true)
+    do
     {
-        if (runners.empty()) {
+        if (runners_.empty()) {
             std::cout << "There are no runners left to remove!!!";
             return;
         }
@@ -126,34 +113,29 @@ void database::RemoveRunners()
             getline(std::cin, nameToRemove);
 
             const auto runnerToRemove = std::find_if(
-                runners.begin(), runners.end(),
-                [nameToRemove](const runner& person) {
-                    return (person.name == nameToRemove);
+                runners_.begin(), runners_.end(),
+                [nameToRemove](const Runner& runner) {
+                    return (runner.name_ == nameToRemove);
                 }
             );
 
-            if (runnerToRemove != runners.end()) {
-                runners.erase(runnerToRemove);
+            if (runnerToRemove != runners_.end()) {
+                runners_.erase(runnerToRemove);
                 break;
             }
             else
                 std::cout << "That runner doesn't exist!\n";
         }
+    } while (askUserToDoAgain("Remove another runner"));
 
-        if (!DoAgain("Remove another runner"))
-            break;
-    }
-
-    std::cout << "\n\n";
+    std::cout << std::endl << std::endl;
 }
 
-
-// Asks the user for a name and allows them to edit that person's 5k time.
-void database::EditRunnerTimes()
+void Database::editRunnerTimes()
 {
-    while (true)
+    do
     {
-        if (runners.empty()) {
+        if (runners_.empty()) {
             std::cout << "There are no runners to edit!!!";
             return;
         }
@@ -166,79 +148,48 @@ void database::EditRunnerTimes()
             getline(std::cin, nameToEdit);
 
             auto runnerToEdit = std::find_if(
-                runners.begin(), runners.end(),
-                [nameToEdit](const runner& person) {
-                return (person.name == nameToEdit);
-            }
+                runners_.begin(), runners_.end(),
+                [nameToEdit](const Runner& person) {
+                    return (person.name_ == nameToEdit);
+                }
             );
 
-            if (runnerToEdit != runners.end()) {
-                runnerToEdit->time5k = GetTimeFromUser();
+            if (runnerToEdit != runners_.end()) {
+                runnerToEdit->time5k_ = askUserForMarathonTime();
                 break;
             }
             else
                 std::cout << "That runner doesn't exist!\n";
         }
+    } while (askUserToDoAgain("Edit another runner's time"));
 
-        if (!DoAgain("Edit another runner's time"))
-            break;
-    }
-
-    std::cout << "\n\n";
+    std::cout << std::endl << std::endl;
 }
 
-
-// Prints the leader-board for 5k times.
-/*
-See the comments for SaveToFile to see why this function isn't const.
-*/
-void database::ShowLeaderboard()
-{
-    std::sort(runners.begin(), runners.end());
-
-    std::cout << "\n5k times:\n\n";
-
-    int position = 1;
-    for (const runner& person : runners)
-    {
-        printf("  %d) ", position++);
-        person.Display();
-        std::cout << "\n";
-    }
-
-    std::cout << "\n\n";
-}
-
-
-// Asks the user if they would like to do the specified task again.
-/*
-This function prevents repeated code, 'phrase' specifies what task the user is
-queried about (e.g. "Edit another PB").
-*/
-bool database::DoAgain(const std::string& phrase)
+// This function prevents repeated code, 'phrase' specifies what task the user
+// is queried about, e.g. "Edit another PB".
+bool Database::askUserToDoAgain(const std::string& phrase)
 {
     while (true)
     {
-        printf("%s? -> (Y/N): ", phrase.c_str());
+        std::cout << phrase << "? -> (Y/N): ";
 
         std::string choiceAsString;
         getline(std::cin, choiceAsString);
-        char choice = choiceAsString[0];
+        const char userChoice = choiceAsString[0];
 
-        if ((choice == 'Y') || (choice == 'y'))
+        if (userChoice == 'Y' || userChoice == 'y')
             return true;
-        else if ((choice == 'N') || (choice == 'n'))
+        else if (userChoice == 'N' || userChoice == 'n')
             return false;
         else
             std::cout << "Invalid input.  ";
     }
 }
 
-
-// Gets a valid distance time from the user.
-time database::GetTimeFromUser()
+Time Database::askUserForMarathonTime()
 {
-    int mins, secs;
+    int mins;
     while (true)
     {
         std::cout << "Enter minutes: ";
@@ -247,12 +198,13 @@ time database::GetTimeFromUser()
         getline(std::cin, minsAsString);
         mins = stoi(minsAsString);
 
-        if ((mins < 0) || (mins >= 60))
+        if (mins < 0 || mins >= 60)
             std::cout << "That's not a valid number of minutes.  ";
         else
             break;
     }
 
+    int secs;
     while (true)
     {
         std::cout << "Enter seconds: ";
@@ -261,12 +213,26 @@ time database::GetTimeFromUser()
         getline(std::cin, secsAsString);
         secs = stoi(secsAsString);
 
-        if ((secs < 0) || (secs >= 60))
+        if (secs < 0 || secs >= 60)
             std::cout << "That's not a valid number of seconds.  ";
         else
             break;
     }
 
-    return time{ mins, secs };
+    return Time{ mins, secs };
 }
 
+std::ostream& operator<<(std::ostream& out, Database& database)
+{
+    std::sort(database.runners_.begin(), database.runners_.end());
+
+    out << std::endl << "5k times:" << std::endl << std::endl;
+
+    int position = 1;
+    for (const Runner& runner : database.runners_)
+        out << "  " << position++ << ") " << runner << std::endl;
+
+    out << std::endl << std::endl;
+
+    return out;
+}

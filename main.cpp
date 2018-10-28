@@ -1,42 +1,61 @@
 #include "database.h"
 
+#include <iostream>
 
-int MenuChoice();
+static void displayMenu()
+{
+    std::cout << "Menu:" << std::endl
+        << "1) Add new runner." << std::endl
+        << "2) Remove runner." << std::endl
+        << "3) Edit runner's personal best." << std::endl
+        << "4) Show leader-board." << std::endl
+        << "5) Save changes." << std::endl
+        << "6) Exit." << std::endl << std::endl;
+}
+
+static int askUserForMenuChoice()
+{
+    while (true)
+    {
+        std::string choiceAsString;
+        std::getline(std::cin, choiceAsString);
+        const int choice = stoi(choiceAsString);
+
+        if (choice < 1 || choice > 6)
+            std::cout << "Not a valid choice.\n";
+        else
+            return choice;
+    }
+}
 
 int main()
 {
-    database timesDatabase;
+    Database runnerDatabase;
 
-    if (!timesDatabase.LoadFromFile()) {
+    if (!runnerDatabase.loadFromFile()) {
         std::cerr << "Error reading runner data.  Exiting...";
         return -1;
     }
 
-    std::cout << "PB running times program.\n\n";
+    std::cout << "PB running times program." << std::endl << std::endl;
 
     bool quit = false;
     while (!quit)
     {
-        std::cout << "Menu:\n";
-        std::cout << "1) Add new runner.\n";
-        std::cout << "2) Remove runner.\n";
-        std::cout << "3) Edit runner's personal best.\n";
-        std::cout << "4) Show leader-board.\n";
-        std::cout << "5) Save changes.\n";
-        std::cout << "6) Exit.\n\n";
+        displayMenu();
 
-        int choice = MenuChoice();
-        switch (choice)
+        const int userChoice = askUserForMenuChoice();
+        switch (userChoice)
         {
-        case 1: timesDatabase.AddRunners();
+        case 1: runnerDatabase.addRunners();
                 break;
-        case 2: timesDatabase.RemoveRunners();
+        case 2: runnerDatabase.removeRunners();
                 break;
-        case 3: timesDatabase.EditRunnerTimes();
+        case 3: runnerDatabase.editRunnerTimes();
                 break;
-        case 4: timesDatabase.ShowLeaderboard();
+        case 4: std::cout << runnerDatabase;
                 break;
-        case 5: timesDatabase.SaveToFile();
+        case 5: runnerDatabase.saveToFile();
                 break;
         case 6: quit = true;
                 break;
@@ -44,23 +63,4 @@ int main()
     }
 
     return 0;
-}
-
-
-int MenuChoice()
-{
-    int choice;
-    while (true)
-    {
-        std::string choiceAsString;
-        getline(std::cin, choiceAsString);
-        choice = stoi(choiceAsString);
-
-        if ((choice < 1) || (choice > 6))
-            std::cout << "Not a valid choice.\n";
-        else
-            break;
-    }
-
-    return choice;
 }

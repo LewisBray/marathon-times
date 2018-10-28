@@ -32,5 +32,11 @@
     <ClCompile Include="database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="distancetime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="runner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

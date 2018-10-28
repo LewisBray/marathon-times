@@ -1,27 +1,28 @@
 #ifndef __DATABASE_H__
 #define __DATABASE_H__
 
+#include "distancetime.h"
 #include "runner.h"
 
+#include <ostream>
 #include <vector>
 
-
-// Class for all operations on database of runner times.
-class database
+class Database
 {
 public:
-    bool SaveToFile();
-    bool LoadFromFile();
-    void AddRunners();
-    void RemoveRunners();
-    void EditRunnerTimes();
-    void ShowLeaderboard();
+    bool saveToFile();
+    bool loadFromFile();
+    void addRunners();
+    void removeRunners();
+    void editRunnerTimes();
+
+    friend std::ostream& operator<<(std::ostream& out, Database& database);
 
 private:
-    static bool DoAgain(const std::string& phrase);
-    static time GetTimeFromUser();
+    static bool askUserToDoAgain(const std::string& phrase);
+    static Time askUserForMarathonTime();
 
-    std::vector<runner> runners;
+    std::vector<Runner> runners_;
 };
 
 #endif
