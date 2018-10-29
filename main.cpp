@@ -4,13 +4,14 @@
 
 static void displayMenu()
 {
-    std::cout << "Menu:" << std::endl
-        << "1) Add new runner." << std::endl
-        << "2) Remove runner." << std::endl
-        << "3) Edit runner's personal best." << std::endl
-        << "4) Show leader-board." << std::endl
-        << "5) Save changes." << std::endl
-        << "6) Exit." << std::endl << std::endl;
+    std::cout << "Menu:\n"
+        << "1) Add new runner.\n"
+        << "2) Remove runner.\n"
+        << "3) Edit runner's personal best.\n"
+        << "4) Show leader-board.\n"
+        << "5) Save changes.\n"
+        << "6) Exit.\n"
+        << std::endl;
 }
 
 static int askUserForMenuChoice()
@@ -19,10 +20,10 @@ static int askUserForMenuChoice()
     {
         std::string choiceAsString;
         std::getline(std::cin, choiceAsString);
-        const int choice = stoi(choiceAsString);
+        const int choice = std::stoi(choiceAsString);
 
         if (choice < 1 || choice > 6)
-            std::cout << "Not a valid choice.\n";
+            std::cout << "Not a valid choice." << std::endl;
         else
             return choice;
     }
@@ -37,7 +38,7 @@ int main()
         return -1;
     }
 
-    std::cout << "PB running times program." << std::endl << std::endl;
+    std::cout << "PB running times program.\n" << std::endl;
 
     bool quit = false;
     while (!quit)

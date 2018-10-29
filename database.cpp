@@ -226,13 +226,13 @@ std::ostream& operator<<(std::ostream& out, Database& database)
 {
     std::sort(database.runners_.begin(), database.runners_.end());
 
-    out << std::endl << "5k times:" << std::endl << std::endl;
+    out << "\n5k times:\n\n";
 
     int position = 1;
     for (const Runner& runner : database.runners_)
-        out << "  " << position++ << ") " << runner << std::endl;
+        out << "  " << position++ << ") " << runner << '\n';
 
-    out << std::endl << std::endl;
+    out << '\n' << std::endl;
 
     return out;
 }
