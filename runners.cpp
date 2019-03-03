@@ -135,7 +135,7 @@ std::ostream& operator<<(std::ostream& out, const Runners& runners)
     out << "\n5k times:\n\n";
 
     int position = 1;
-    for (const auto runner : runners)
+    for (const Runner& runner : runners)
         out << "  " << position++ << ") " << runner << '\n';
 
     out << std::flush;
