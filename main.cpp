@@ -1,5 +1,9 @@
-#include "database.h"
+// The main entry point of the application, responsible for loading
+// the database of runners and handling the UI logic.
 
+#include "runners.h"
+
+#include <algorithm>
 #include <iostream>
 
 static void displayMenu()
@@ -18,8 +22,7 @@ static int askUserForMenuChoice()
 {
     while (true)
     {
-        std::string choiceAsString;
-        std::getline(std::cin, choiceAsString);
+        const std::string choiceAsString = getStringFromUser();
         const int choice = std::stoi(choiceAsString);
 
         if (choice < 1 || choice > 6)
@@ -31,37 +34,93 @@ static int askUserForMenuChoice()
 
 int main()
 {
-    Database runnerDatabase;
+    constexpr char dataFile[] = "runners.bin";
+    
+    try
+    {
+        Runners runners = loadRunnerData(dataFile);
 
-    if (!runnerDatabase.loadFromFile()) {
-        std::cerr << "Error reading runner data.  Exiting...";
+        std::cout << "PB running times program.\n" << std::endl;
+
+        bool quit = false;
+        while (!quit)
+        {
+            displayMenu();
+
+            const int userChoice = askUserForMenuChoice();
+            switch (userChoice)
+            {
+            case 1:
+            {
+                do
+                {
+                    const Runner newRunner = askUserForRunnerToAdd(runners);
+                    runners.insert(newRunner);
+                } while (askIfUserWantsTo("Add another runner"));
+
+                break;
+            }
+            case 2:
+            {
+                do
+                {
+                    if (runners.empty()) {
+                        std::cout << "There are no runners to remove!!!";
+                        break;
+                    }
+
+                    const auto runnerToRemove = askUserForRunnerToRemove(runners);
+                    runners.erase(runnerToRemove);
+                } while (askIfUserWantsTo("Remove another runner"));
+
+                break;
+            }
+            case 3:
+            {
+                if (runners.empty()) {
+                    std::cout << "There are no runners to edit!!!";
+                    break;
+                }
+
+                do
+                {
+                    const auto runnerToEdit = askUserForRunnerToEdit(runners);
+                    runnerToEdit->second = askUserForMarathonTime();
+                } while (askIfUserWantsTo("Edit another runner's time"));
+
+                // Have to sort runners here as they are potentially out of
+                // order due to editing.  This is a little annoying but it
+                // seems consistent with std::map...
+                std::sort(runners.begin(), runners.end());
+                break;
+            }
+            case 4:
+                std::cout << runners;
+                break;
+
+            case 5:
+                saveRunnerData(runners, dataFile);
+                std::cout << "Changes saved." << std::endl;
+                break;
+
+            case 6:
+                quit = true;
+                break;
+            }
+
+            std::cout << '\n' << std::endl;
+        }
+
+        return 0;
+    }
+    catch (const std::exception& error)
+    {
+        std::cout << error.what() << std::endl;
         return -1;
     }
-
-    std::cout << "PB running times program.\n" << std::endl;
-
-    bool quit = false;
-    while (!quit)
+    catch (...)
     {
-        displayMenu();
-
-        const int userChoice = askUserForMenuChoice();
-        switch (userChoice)
-        {
-        case 1: runnerDatabase.addRunners();
-                break;
-        case 2: runnerDatabase.removeRunners();
-                break;
-        case 3: runnerDatabase.editRunnerTimes();
-                break;
-        case 4: std::cout << runnerDatabase;
-                break;
-        case 5: runnerDatabase.saveToFile();
-                break;
-        case 6: quit = true;
-                break;
-        }
+        std::cout << "Unhandled exception." << std::endl;
+        return -1;
     }
-
-    return 0;
 }

@@ -117,15 +117,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="runner.h" />
-    <ClInclude Include="database.h" />
-    <ClInclude Include="distancetime.h" />
+    <ClInclude Include="marathontime.h" />
+    <ClInclude Include="runners.h" />
+    <ClInclude Include="value_ordered_map.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="distancetime.cpp" />
+    <ClCompile Include="marathontime.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="database.cpp" />
-    <ClCompile Include="runner.cpp" />
+    <ClCompile Include="runners.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="runner.h">
+    <ClInclude Include="runners.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="database.h">
+    <ClInclude Include="marathontime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="distancetime.h">
+    <ClInclude Include="value_ordered_map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -29,13 +29,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="database.cpp">
+    <ClCompile Include="runners.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="distancetime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="runner.cpp">
+    <ClCompile Include="marathontime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
