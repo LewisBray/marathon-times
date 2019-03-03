@@ -2,35 +2,10 @@
 // the database of runners and handling the UI logic.
 
 #include "runners.h"
+#include "ui.h"
 
 #include <algorithm>
 #include <iostream>
-
-static void displayMenu()
-{
-    std::cout << "Menu:\n"
-        << "1) Add new runner.\n"
-        << "2) Remove runner.\n"
-        << "3) Edit runner's personal best.\n"
-        << "4) Show leader-board.\n"
-        << "5) Save changes.\n"
-        << "6) Exit.\n"
-        << std::endl;
-}
-
-static int askUserForMenuChoice()
-{
-    while (true)
-    {
-        const std::string choiceAsString = getStringFromUser();
-        const int choice = std::stoi(choiceAsString);
-
-        if (choice < 1 || choice > 6)
-            std::cout << "Not a valid choice." << std::endl;
-        else
-            return choice;
-    }
-}
 
 int main()
 {
@@ -47,10 +22,10 @@ int main()
         {
             displayMenu();
 
-            const int userChoice = askUserForMenuChoice();
+            const MenuChoice userChoice = askUserForMenuChoice();
             switch (userChoice)
             {
-            case 1:
+            case MenuChoice::AddRunners:
             {
                 do
                 {
@@ -60,7 +35,8 @@ int main()
 
                 break;
             }
-            case 2:
+
+            case MenuChoice::RemoveRunners:
             {
                 do
                 {
@@ -75,7 +51,8 @@ int main()
 
                 break;
             }
-            case 3:
+
+            case MenuChoice::EditRunners:
             {
                 if (runners.empty()) {
                     std::cout << "There are no runners to edit!!!";
@@ -94,16 +71,17 @@ int main()
                 runners.sort();
                 break;
             }
-            case 4:
+
+            case MenuChoice::ShowRunners:
                 std::cout << runners;
                 break;
 
-            case 5:
+            case MenuChoice::SaveData:
                 saveRunnerData(runners, dataFile);
                 std::cout << "Changes saved." << std::endl;
                 break;
 
-            case 6:
+            case MenuChoice::Quit:
                 quit = true;
                 break;
             }

@@ -1,5 +1,5 @@
 // Simple struct for holding marathon times with a couple of
-// functions for use in the project.
+// operator overloads for manipulation used in the project.
 
 #ifndef __MARATHONTIME_H__
 #define __MARATHONTIME_H__
