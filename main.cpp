@@ -88,10 +88,10 @@ int main()
                     runnerToEdit->second = askUserForMarathonTime();
                 } while (askIfUserWantsTo("Edit another runner's time"));
 
-                // Have to sort runners here as they are potentially out of
-                // order due to editing.  This is a little annoying but it
-                // seems consistent with std::map...
-                std::sort(runners.begin(), runners.end());
+                // Have to sort runners here as they are potentially
+                // out of order due to editing.  This is a little
+                // annoying but it seems consistent with std::map...
+                runners.sort();
                 break;
             }
             case 4:

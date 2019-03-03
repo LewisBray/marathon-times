@@ -57,7 +57,7 @@ public:
 
         for (iterator it = this->begin(), end = this->end(); it != end; ++it)
         {
-            if (valueCompLess_(value.second, it->second))
+            if (value_less_(value.second, it->second))
             {
                 map_.insert(it, value);
                 return std::make_pair(it, true);
@@ -73,8 +73,18 @@ public:
         return map_.erase(position);
     }
 
+    void sort()
+    {
+        const auto pair_less = [this](const value_type& lhs, const value_type& rhs)
+        {
+            return value_less_(lhs.second, rhs.second);
+        };
+
+        std::sort(map_.begin(), map_.end(), pair_less);
+    }
+
 private:
-    Compare valueCompLess_;
+    Compare value_less_;
     std::vector<value_type> map_;
 };
 
